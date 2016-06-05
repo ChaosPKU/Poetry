@@ -7,9 +7,9 @@
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation, Dropout
 from keras.layers.recurrent import LSTM
-import numpy as np
-import random
-from configs.config import *
+# import numpy as np
+# import random
+# from configs.config import *
 
 
 class LSTM_RNN_Model:

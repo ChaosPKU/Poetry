@@ -49,7 +49,7 @@ def get_data():
             train_text += sentence.split()
         # if len(train_text) > model_nb_samples:
         #     break
-    # train_text = train_text[:model_nb_samples + 1]
+    train_text = train_text[:model_nb_samples + 1]
     words = set(train_text)
     word_to_indices = dict((word, idx) for idx, word in enumerate(words))
     indices_to_word = dict((idx, word) for idx, word in enumerate(words))
@@ -63,12 +63,13 @@ def get_data():
 
 def lstm_train():
     X, Y, word_to_indices, indices_to_word, nb_words, train_text = get_data()
-    lstm = LSTM_RNN_Model(nb_words, 5000, nb_words)
+    lstm = LSTM_RNN_Model(nb_words, 2000, nb_words)
     lstm.build(dropout=0.2)
-    print "Vocabulary Length: %d, Text Length: %d" % (nb_words, len(train_text))
+    outf = open(console_log_path, 'a')
+    outf.write("Vocabulary Length: %d, Text Length: %d" % (nb_words, len(train_text)) + '\n')
     for iter in xrange(model_nb_epoch):
-        print("==============================================================")
-        print("Iteration: ", iter)
+        outf.write("==============================================================" + '\n')
+        outf.write("Iteration: " + str(iter) + '\n')
         lstm.model.fit(X, Y, batch_size=model_batch_size, nb_epoch=1)
         start_index = random.randint(0, len(train_text) - 1)
         result = [train_text[start_index]]
@@ -79,10 +80,12 @@ def lstm_train():
             next_index = sample(predictions)
             next_word = indices_to_word[next_index]
             result.append(next_word)
-        print ''.join(result)
+        # print ''.join(result)
+        outf.write(''.join(result) + '\n')
+    outf.close()
 
 
-def sample(self, a, temperature=1.0):
+def sample(a, temperature=1.0):
         a = np.log(a) / temperature
         a = np.exp(a) / np.sum(np.exp(a))
         return np.argmax(np.random.multinomial(1, a, 1))
