@@ -20,7 +20,7 @@ word_min_count = 10
 word_predicted_window = 10
 
 model_weights_path = "../data/model_data/model_weights"
-model_batch_size = 50
+model_batch_size = 1000
 model_input_nb_words = 1
 model_output_nb_words = 20
 model_input_dim = model_input_nb_words * word_vector_dimension
