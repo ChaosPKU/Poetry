@@ -19,30 +19,30 @@ import cPickle
 
 
 if __name__ == '__main__':
-    # X, Y = load_data(GRU_model_nb_samples,
-    #                  GRU_model_input_nb_words, GRU_model_output_nb_words)
-    # model = get_GRU_model()
-    # print 'Training...'
-    # model.fit(X, Y,
-    #           nb_epoch=GRU_model_nb_epoch,
-    #           batch_size=32,
-    #           verbose=1)
-    # model.save_weights(model_weights_path, overwrite=True)
-    # lstm_train()
     parser = argparse.ArgumentParser(description='Generate new Chinese poems')
     parser.add_argument('start_words', type=str, help="Chinese characters in the beginning of the poem")
-    parser.add_argument('-m', '--model', default=model_architecture_file_path, help='Model architecture file location')
-    parser.add_argument('-w', '--weight', default=model_weights_path, help='Model weights location')
-    parser.add_argument('-s', '--samples', default=nb_train_samples, help='Number of train samples')
-    parser.add_argument('-e', '--epoch', default=nb_train_epoch, help='Number of train epoch')
+    parser.add_argument('-m', '--model', type=str, default=model_architecture_file_path, help='Model architecture file location')
+    parser.add_argument('-w', '--weight', type=str, default=model_weights_path, help='Model weights location')
+    parser.add_argument('-s', '--samples', type=int, default=nb_train_samples, help='Number of train samples')
+    parser.add_argument('-e', '--epoch', type=int, default=nb_train_epoch, help='Number of train epoch')
+    parser.add_argument('-f', '--files', type=int, default=nb_train_files, help='Number of train files')
+    # parser.add_argument('-r', '--row', default=nb_poem_rows, help='Number of poem rows')
+    # parser.add_argument('-c', '--col', default=nb_poem_cols, help='Number of poem cols')
 
     args = parser.parse_args()
-
     words_to_indices, indices_to_words = cPickle.load(open(words_indices_dict_path, 'r+'))
 
     if not os.path.exists(args.model) or not os.path.exists(args.weight):
-        print 'No available model exists.Start Training...'
-        data, labels = cPickle.load(open(poetry_train_data_path, 'r+'))
+        print 'No available model exists. Start Training...'
+        data = []
+        labels = []
+        for i in xrange(args.files):
+            new_data, new_labels = cPickle.load(open(poetry_train_data_path[:-4] + '_' + ('%03d' % i) +
+                                                     poetry_train_data_path[-4:], 'r+'))
+            data.extend(new_data)
+            labels.extend(new_labels)
+        # data, labels = cPickle.load(open('../data/gen_data/train_data/train_data_001.pkl', 'r+'))
+        # data, labels = cPickle.load(open(poetry_train_data_path, 'r+'))
         # data, labels = cPickle.load(open("../data/gen_data/small_train_data.pkl", 'r+'))
         # cPickle.dump([data[:1000], labels[:1000]], open("../data/gen_data/small_train_data.pkl", 'w'))
         num_words = len(words_to_indices)
@@ -60,5 +60,6 @@ if __name__ == '__main__':
     outf = open(console_log_path, 'a')
     for i in xrange(1000):
         poem = make_poem(model, args.start_words[1:-1], words_to_indices, indices_to_words)
+        outf.write('Poem %d \n' % i)
         outf.write(''.join(poem) + '\n')
     outf.close()

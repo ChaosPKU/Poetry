@@ -6,11 +6,17 @@
 
 poem_max_length = 32
 poem_division_step = 1
-sample_temperature = 0.8
-nb_train_samples = 100
+sample_temperature = 0.5
+nb_train_samples = 100000
 nb_train_epoch = 100
+nb_train_files = 10
+vocabulary_data_size = 3000
+nb_poem_rows = 4
+nb_poem_cols = 7
+
 
 puncts = u"。.？?！!，,、；;：:（）《》<>()"
+tags = u"^$"
 poetry_raw_directory_path = "../data/raw_data/raw_poem_all/"
 short_poetry_raw_data_path = '../data/raw_data/short_poetry.txt'
 poetry_vocabulary_data_path = '../data/gen_data/poetry.txt'
@@ -23,7 +29,7 @@ word_min_count = 10
 word_predicted_window = 10
 
 words_indices_dict_path = '../data/gen_data/indices.pkl'
-poetry_train_data_path = '../data/gen_data/train_data.pkl'
+poetry_train_data_path = '../data/gen_data/train_data/train_data.pkl'
 model_architecture_file_path = "../data/model_data/model.json"
 model_weights_path = "../data/model_data/model_weights.h5"
 
