@@ -14,6 +14,7 @@ vocabulary_data_size = 5000
 nb_poem_rows = 4
 nb_poem_cols = 7
 nb_batch_size = 128
+nb_make_poems = 1000
 
 
 puncts = u"。.？?！!，,、；;：:（）《》<>()"

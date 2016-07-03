@@ -55,8 +55,7 @@ def make_poem(model, start_words, words_to_indices, indices_to_words):
     return [indices_to_words[i].encode("utf-8") for i in text[poem_max_length + 1:-1]]
 
 
-def get_model(args):
-    words_to_indices, indices_to_words = cPickle.load(open(words_indices_dict_path, 'r+'))
+def get_model(args, words_to_indices):
     model = None
     if not os.path.exists(args.model) or not os.path.exists(args.weight):
         print 'No available model exists. Start Training...'
@@ -69,7 +68,7 @@ def get_model(args):
             labels = []
             for i in xrange(args.files):
                 data_file_name = poetry_train_data_path[:-4] + '_' + \
-                                 ('%0' + str(len(str(len(train_file_list)))) + 'd') % (i + l * args.files) + \
+                                 ('%0' + str(len(str(len(all_train_files)))) + 'd') % (i + l * args.files) + \
                                  poetry_train_data_path[-4:]
                 print 'Read data from file ' + data_file_name
                 new_data, new_labels = cPickle.load(open(data_file_name, 'r+'))
@@ -82,15 +81,18 @@ def get_model(args):
             train_data, test_data, train_labels, test_labels = train_test_split(data, labels, test_size=0.1)
             if not os.path.exists(args.model) or not os.path.exists(args.weight):
                 print 'Building...'
-                model = LSTM_RNN_Model(train_data, train_labels, test_data, test_labels, output_len=num_words,
-                                       nb_epoch=args.epoch, batch_size=args.batch)
-                model.build()
+                lstm_model = LSTM_RNN_Model(train_data, train_labels, test_data, test_labels, output_len=num_words,
+                                            nb_epoch=args.epoch, batch_size=args.batch)
+                lstm_model.build()
             else:
                 print 'Loading model...'
-                model = model_from_json(open(args.model).read())
-                model.load_weights(args.weight)
+                pre_model = model_from_json(open(args.model).read())
+                pre_model.load_weights(args.weight)
+                lstm_model = LSTM_RNN_Model(train_data, train_labels, test_data, test_labels, output_len=num_words,
+                                            nb_epoch=args.epoch, batch_size=args.batch, model=pre_model)
             print 'Training...'
-            model.train()
+            lstm_model.train()
+            model = lstm_model.model
     else:
         print 'Loading model...'
         model = model_from_json(open(args.model).read())
