@@ -36,21 +36,5 @@ poetry_train_data_path = '../data/gen_data/train_data/train_data.pkl'
 model_architecture_file_path = "../data/model_data/model.json"
 model_weights_path = "../data/model_data/model_weights.h5"
 
-# model_batch_size = 1
-# model_input_nb_words = 1
-# model_output_nb_words = 20
-# model_input_dim = model_input_nb_words * word_vector_dimension
-# model_output_dim = model_output_nb_words * word_vector_dimension
-# model_hidden_dim = 200
-# model_activation = 'relu'
-# model_inner_activation = 'relu'
-# model_output_activation = 'relu'
-# model_nb_samples = 10000
-# model_dropout = 0.5
-# model_loss = 'sparse_categorical_crossentropy'
-# model_optimizer = 'RMSprop'
-# model_nb_epoch = 500
-
 log_path = '../log/'
 console_log_path = log_path + 'console.log'
-

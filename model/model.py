@@ -5,7 +5,7 @@
 # Author: Chaos <xinchaoxt@gmail.com>
 
 import numpy as np
-# from gensim.models import Word2Vec
+from gensim.models import Word2Vec
 from configs.config import *
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
@@ -39,16 +39,15 @@ class LSTM_RNN_Model:
             self.model = model
 
     def build(self):
+        model = Word2Vec.load(self.word_vector_file)
         # adding 1 to account for 0th index (for masking)
-        # model = Word2Vec.load(self.word_vector_file)
-        # embedding_weights = np.zeros((self.output_len + 1, self.vector_size))
-        # for i in xrange(self.output_len + 1):
-        #     embedding_weights[i, :] = model[model.index2word[i]]
-        embedding_weights = np.load(open('../data/gen_data/embedding_weights'))
+        embedding_weights = np.zeros((self.output_len + 1, self.vector_size))
+        for i in xrange(self.output_len + 1):
+            embedding_weights[i, :] = model[model.index2word[i]]
 
-        # self.model.add(Embedding(self.output_len + 1, self.output_len + 1, weights=[np.identity(self.output_len + 1)],
-        #                          input_length=self.input_len, trainable=False))
-        self.model.add(Embedding(input_dim=self.output_len + 1, output_dim=self.vector_size, weights=[embedding_weights], mask_zero=True,
+        # use word2vec results to init the embedding weights
+        self.model.add(Embedding(input_dim=self.output_len + 1, output_dim=self.vector_size,
+                                 weights=[embedding_weights], mask_zero=True,
                                  input_length=self.input_len, trainable=False))
         self.model.add(LSTM(self.hidden_len, input_shape=(self.input_len, self.vector_size), return_sequences=True))
         self.model.add(Dropout(self.dropout))
@@ -61,12 +60,14 @@ class LSTM_RNN_Model:
     def train(self):
         self.model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=["accuracy"])
 
+        # add early stop to terminate current training epoch if the valuate loss doesn't reduce
         early_stop = EarlyStopping(verbose=1, patience=3, monitor='val_loss')
-        model_check = ModelCheckpoint(self.model_architecture_file, monitor='val_loss', verbose=True, save_best_only=True)
+        model_check = ModelCheckpoint(self.model_architecture_file, monitor='val_loss', verbose=True,
+                                      save_best_only=True)
         self.model.fit(self.X, self.Y, batch_size=self.batch_size, nb_epoch=self.nb_epoch,
                        validation_data=(self.X_test, self.Y_test), callbacks=[early_stop, model_check])
+        # dump the model
         outf = open(self.model_architecture_file, 'w')
         outf.write(self.model.to_json())
         self.model.save_weights(self.model_weights_file, overwrite=True)
         outf.close()
-

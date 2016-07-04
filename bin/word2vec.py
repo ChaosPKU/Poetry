@@ -16,6 +16,11 @@ def uwrite(fout, text, encode='utf-8'):
 
 
 def gen_data(outFile):
+    """
+    Preprocess raw data for building a word2vec model
+    :param outFile: output file of the results
+    :return:
+    """
     outf = open(outFile, 'a')
     for file in poem_raw_file_name:
         inf = open(poetry_raw_directory_path + file)
@@ -43,4 +48,3 @@ if __name__ == '__main__':
         workers=multiprocessing.cpu_count())
     model.save(poetry_gen_data_model_path)
     model.save_word2vec_format(poetry_gen_data_vector_path, binary=False)
-

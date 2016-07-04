@@ -1,7 +1,7 @@
 #! /usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 # File: preprocessing.py
-# Date: 2016-06-24
+# Date: 2016-06-01
 # Author: Chaos <xinchaoxt@gmail.com>
 
 import sys
@@ -19,6 +19,7 @@ def read_data():
         body_idx = fields.index('body')
         for line in inf:
             fields = line.decode('utf-8').strip().split('\t')
+            # add start and end tags
             body = "^" + fields[body_idx] + "$"
             data.append([chr for chr in body if chr])
         inf.close()
@@ -33,6 +34,13 @@ def word2indices(words_list, words_to_indices, word):
 
 
 def preprocessing(raw_data, length, step, size):
+    """
+    Construct the training data
+    :param length: length of the input of RNN
+    :param step: timesteps of sampling
+    :param size: the vocabulary size
+    :return: dicts of words to indices, indices to words and training data and labels
+    """
     data = []
     label = []
 
@@ -43,6 +51,7 @@ def preprocessing(raw_data, length, step, size):
     words_list = [x[0] for x in vocabulary]
     words_to_indices = {x[0]: i + 1 for i, x in enumerate(vocabulary)}
     indices_to_words = {i + 1: x[0] for i, x in enumerate(vocabulary)}
+    # use * to represent these words ignored in the vocabulary
     words_to_indices[u'*'] = size + 1
     indices_to_words[size + 1] = u'*'
 
@@ -72,9 +81,3 @@ if __name__ == "__main__":
                      open(poetry_train_data_path[:-4] + '_' + (('%0' + str(len(str(nb))) + 'd') % i) + poetry_train_data_path[-4:], 'w+'))
     cPickle.dump([data[nb * nb_train_samples:len(data)], label[nb * nb_train_samples:len(data)]],
                  open(poetry_train_data_path[:-4] + '_' + (('%0' + str(len(str(nb))) + 'd') % nb) + poetry_train_data_path[-4:], 'w+'))
-
-    # 11780 words found
-    # 14688545 train samples generated
-
-    # totally 14920052 words have been counted, common words have been counted for 14516905 times
-    # 25.47% of all distinct words covers 97.30% word frequency
