@@ -6,6 +6,7 @@ A RNN model to automatically generate Chinese ancient poems with the input of st
 The idea is inspired by Weiyi Zheng's [tangshi-rnn](https://github.com/zhengwy888/tangshi-rnn) and Andrej Karpathy's [Char-RNN](https://github.com/karpathy/char-rnn).
 
 ## 2. Samples
+
 ```
 1)             2)             3)             4)
 白鹭窥鱼立，    一夜北风紧，    迟日江山丽，     去年今日此门中，
@@ -16,7 +17,8 @@ The idea is inspired by Weiyi Zheng's [tangshi-rnn](https://github.com/zhengwy88
 相逢未自知。
 ```
 
-### 3. Train and make poems
+## 3. Train and make poems
+
 ```
 python main.py '一夜北风紧，' -p 100
 ```
@@ -25,8 +27,10 @@ Generate a word2vec model and use the result to init the embedding layer weights
 The model stacked 2 LSTM modules, each with 512 neurons. And 0.2 dropout rate while training. 
 Please view the code to get more details.
 
-### 4. Data
+## 4. Data
+
 Only use a small part of Quan-Tang-Shi and Quan-Song-Shi.
 
-### 5. Todo
+## 5. Todo
+
 A lot, such as adding rhythm.
