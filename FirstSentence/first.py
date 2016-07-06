@@ -1,6 +1,7 @@
 ## coding=utf-8 ##
 import os
 import operator
+import random
 
 
 # 0 represents either, 1 represents Ping, -1 represents Ze
@@ -20,17 +21,18 @@ PINGSHUI_PATH = "./dataset/pingshui.txt"
 SHIXUEHANYING_PATH = "./dataset/shixuehanying.txt"
 # n-gram executing file path (need to install srilm first)
 NGRAM_PATH = "/home/user/poem/srilm/bin/i686-m64/ngram"
-# first candidate file name
-CANDIDATE_FILE_PATH = "./poem_lm/candidates.txt"
+# candidates file name
+CANDIDATE_FILE_PATH = './intermediate/candidates/candidates.'
 # candidates score file name
-CANDIDATE_SCORE_PATH = "./poem_lm/score.ppl"
+CANDIDATE_SCORE_PATH = "./intermediate/score/score.ppl."
+# top candidates file name
+TOP_RESULT_PATH = "./intermediate/top/top."
 # language model file name
 LANGUAGE_MODEL_PATH = "./poem_lm/first.poem.lm"
-# n-best candidates
-N_BEST_CANDIDATES = 10
+
 
 # get the tonal dictionary of each character based on "Pingshui Rhyme"
-def read_character_tonal():
+def read_character_tone():
     tonals = {}
     f = open(PINGSHUI_PATH, 'r')
     isping = False
@@ -92,9 +94,13 @@ def user_input():
             print "Wrong input, Please try again"
     while True:
         print "Please choose poem subject:\n"
+        print u'0 随机'
         for i in range(0, len(labels)):
-            print str(i + 1) + labels[i]
+            print str(i + 1) + " " + labels[i]
         label = input()
+        if label == 0:
+            label = int(random.uniform(1, len(labels)))
+            break
         if not 1 <= label <= len(labels):
             print "Wrong input, Please try again"
             continue
@@ -102,13 +108,16 @@ def user_input():
             break
     print "User choose " + str(chars) + "-char quatrain with subject " + \
           labels[label - 1]
-    return words[label - 1], chars
+    return words[label - 1], chars, labels[label - 1]
 
 
 # judge if the given sentence follows the given tonal pattern
 def judge_tonal_pattern(row, chars):
-    tonal_hash = read_character_tonal()
-    i = j = 0
+    tonal_hash = read_character_tone()
+    # remove poem with duplicated characters
+    if len(row) != len(set(row)):
+        return -1
+    # judge rhythm availability
     if chars == 5:
         tone = FIVE_PINGZE
     else:
@@ -130,7 +139,7 @@ def judge_tonal_pattern(row, chars):
 
 # based on user option of chars, tonal and keywords, generate all possible candidates of the first sentence
 def generate_all_candidates():
-    vec, chars = user_input()
+    vec, chars, subject = user_input()
     candidates = []
     result = []
     vec.sort(key=lambda x: len(x))
@@ -200,20 +209,23 @@ def generate_all_candidates():
         if j == -1:
             continue
         result.append(i)
-    return result
+    return result, subject
 
 
-# select one of the best candidates
-def find_best_sentence():
+# select one of the best candidates by randomly select one from top n results
+def find_best_sentences(n=10):
     candidates = []
+    subject = ""
     while True:
-        candidates = generate_all_candidates()
+        candidates, subject = generate_all_candidates()
         if len(candidates) != 0:
             break
         else:
             print "There is not enough sentence in this category, please choose another one"
+
     # write the candidates into the candidates file
-    output = open(CANDIDATE_FILE_PATH, 'w')
+    subject = subject.encode("utf-8")
+    output = open(CANDIDATE_FILE_PATH + subject, 'w')
     for string in candidates:
         for j in range(0, len(candidates[0])):
             tmp = string[j].encode("utf-8")
@@ -223,11 +235,11 @@ def find_best_sentence():
 
     # use n-gram model to find the best sentence
     cmd = '%s -ppl %s -debug 1 -order 3 -lm %s > %s' % \
-          (NGRAM_PATH, CANDIDATE_FILE_PATH, LANGUAGE_MODEL_PATH, CANDIDATE_SCORE_PATH)
+          (NGRAM_PATH, CANDIDATE_FILE_PATH + subject, LANGUAGE_MODEL_PATH, CANDIDATE_SCORE_PATH + subject)
     os.system(cmd)
 
     # find n-best sentences with largest score
-    fp = open(CANDIDATE_SCORE_PATH)
+    fp = open(CANDIDATE_SCORE_PATH + subject)
     candidates_score_list = []
     for line in fp.readlines():
         if 'file' in line:
@@ -240,16 +252,22 @@ def find_best_sentence():
         else:
             tmp = [line.strip()]
     candidates_score_list.sort(key=operator.itemgetter(1))
-    result = candidates_score_list[0: min(N_BEST_CANDIDATES, len(candidates_score_list))]
+    result = candidates_score_list[0: min(n, len(candidates_score_list))]
+
+    # write the result to file
+    output = open(TOP_RESULT_PATH + subject, 'w')
+    print "Top " + str(n) + " results:"
     for i in result:
-        print i[0].decode("utf-8")
-    return result
+        s = i[0].replace(' ', '')
+        output.write(s + "\n")
+        print s
+    output.close()
+    res = random.choice(result)[0]
+    res = res.replace(' ', '')
+    print "The first sentence is: " + res
+    return res
 
-
-
-find_best_sentence()
-
-
+find_best_sentences(10)
 
 
 
