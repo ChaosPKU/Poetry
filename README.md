@@ -29,7 +29,7 @@ Please view the code to get more details.
 
 ## 4. Data
 
-Only use a small part of Quan-Tang-Shi and Quan-Song-Shi.
+Only use a small part of [Quan-Tang-Shi](https://pan.baidu.com/s/1byQQHC) and [Quan-Song-Shi](https://pan.baidu.com/s/1miO5jvi).
 
 ## 5. Todo
 
